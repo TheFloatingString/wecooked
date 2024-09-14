@@ -1,3 +1,9 @@
-from fastapi import FastAPI
+from flask import Flask
+from flask import render_template
 
-app = FastAPI()
+app = Flask(__name__)
+
+
+@app.route("/")
+def hello_world():
+    return "hello"
