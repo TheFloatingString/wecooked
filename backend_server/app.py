@@ -16,7 +16,8 @@ def sms_reply():
     resp = MessagingResponse()
 
     # Add a message
-    resp.message("The Robots are coming! Head for the hills!")
+    body = request.values.get("Body").lower()
+    resp.message(body)
 
     return str(resp)
 
