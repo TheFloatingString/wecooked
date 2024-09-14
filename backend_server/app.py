@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
@@ -7,6 +7,11 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     return "hello"
+
+
+@app.route("/api/view/client")
+def api_current():
+    return jsonify({"data": "we cooked."})
 
 
 @app.route("/sms", methods=["GET", "POST"])
