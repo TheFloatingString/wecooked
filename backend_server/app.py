@@ -12,7 +12,7 @@ def hello_world():
     return "hello"
 
 
-@app.route("/api/view/client")
+@app.route("/api/view/client", methods=["GET", "POST"])
 def api_current():
     return jsonify({"data": "we cooked."})
 
