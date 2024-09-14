@@ -15,6 +15,8 @@ itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 multidict==6.1.0
+numpy==2.1.1
+opencv-python==4.10.0.84
 PyJWT==2.9.0
 requests==2.32.3
 twilio==9.3.0
