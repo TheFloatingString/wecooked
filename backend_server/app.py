@@ -19,7 +19,7 @@ def api_current():
 
 @app.route("/api/view/client/completed_item", methods=["GET", "POST"])
 def api_view_client_completed_item():
-    return jsonify({"substract one"})
+    return jsonify({"data": "substract one"})
 
 
 @app.route("/sms", methods=["GET", "POST"])
