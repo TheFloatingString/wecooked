@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mappedin/mappedin-js@beta/lib/mappedin.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      #mappedin-map {
+        height: 100%;
+        width: 100%;
+        position: relative;
+      }
+    </style>
+    <title>Mappedin Web SDK v6 Getting Started with JSDelivr</title>
+  </head>
+  <body>
+    <!-- <div id="mappedin-map"></div> -->
+
+    <iframe href="https://www.mappedin.com/" title="Mappedin Map" name="Mappedin Map" allow="clipboard-write; web-share" scrolling="no" width="100%" height="650" frameborder="0" style="border:0" src="https://app.mappedin.com/map/66e5e84f014c90000bd7cf12?embedded=true"></iframe>
+
+    <script type="module">
+      import {
+        getMapData,
+        show3dMap
+      } from "https://cdn.jsdelivr.net/npm/@mappedin/mappedin-js@beta/lib/esm/index.js";
+
+      // See Demo API key Terms and Conditions
+      const options = {
+        key: "mik_yeBk0Vf0nNJtpesfu560e07e5",
+        secret: "mis_2g9ST8ZcSFb5R9fPnsvYhrX3RyRwPtDGbMGweCYKEq385431022",
+        mapId: "65c0ff7430b94e3fabd5bb8c"
+      }
+
+      getMapData(options).then(async (mapData) => {
+        const mapView = await show3dMap(document.getElementById("mappedin-map"), mapData);
+      });
+    </script>
+  </body>
+</html>
+
