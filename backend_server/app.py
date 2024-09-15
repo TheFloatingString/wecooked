@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 from twilio.twiml.messaging_response import MessagingResponse
 import cv2
 from dotenv import load_dotenv
@@ -7,9 +8,12 @@ load_dotenv()
 import os
 import cohere
 import requests
+import numpy as np
 
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config["CORS_HEADERS"] = "Content-Type"
 
 
 GROCERY_LIST = []
@@ -17,6 +21,18 @@ ORIGINAL_GROCERY_LIST = []
 LATITUDE = 43.471759983680
 LONGITUDE = -80.53858848369224
 sift = cv2.SIFT_create()
+
+
+coordinates_dict = {
+    "corner_1": (43.47173942543805, -80.53866917414487),
+    "corner_2": (43.47164247930744, -80.5387775283001),
+    "corner_4": (43.47156229364812, -80.53863486981209),
+    "corner_3": (43.47165225659944, -80.53853125699004),
+}
+
+
+def match_count_score(matches: int, n_kp1: int, n_kp2: int) -> float:
+    return 100 * (matches / min(n_kp1, n_kp2))
 
 
 def create_prompt(user_resp) -> str:
@@ -59,12 +75,59 @@ def hello_world():
 
 @app.route("/api/update_location", methods=["GET", "POST"])
 def api_update_location():
+    global LATITUDE
+    global LONGITUDE
+
     json_resp = request.json
     print(json_resp)
+
+    sift = cv2.SIFT_create()
+    kp_query, des_query = sift.detectAndCompute(
+        np.asarray(json_resp["data"], dtype=np.uint8), None
+    )
+    cv2.imwrite("curr_frame.png", np.asarray(json_resp["data"], dtype=np.uint8))
+
+    max_similarity_score = -1
+    most_similar_corner = -1
+
+    for i in range(1, 5):
+        img_target_query = f"static\\img\\corner_{i}.jpg"
+        # if DEBUG:
+        #     print(img_target_query)
+        target_img = cv2.cvtColor(cv2.imread(img_target_query), cv2.COLOR_BGR2RGB)
+        kp_target, des_target = sift.detectAndCompute(target_img, None)
+
+        FLANN_INDEX_KDTREE = 1
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
+
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(des_query, des_target, k=2)
+
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m, n in matches:
+            if m.distance < 0.7 * n.distance:
+                good.append(m)
+
+        curr_score = match_count_score(
+            matches=len(good), n_kp1=len(kp_query), n_kp2=len(kp_target)
+        )
+
+        if curr_score > max_similarity_score:
+            max_similarity_score = curr_score
+            most_similar_corner = i
+
+    LATITUDE = coordinates_dict[f"corner_{i}"][0]
+    LONGITUDE = coordinates_dict[f"corner_{i}"][1]
+
+    print(get_current_state())
+
     return jsonify({"data": True})
 
 
 @app.route("/api/view/dashboard")
+@cross_origin()
 def api_view_dashboard():
     return jsonify(get_current_state())
 

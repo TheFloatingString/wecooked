@@ -18,37 +18,38 @@ def match_count_score(matches: int, n_kp1: int, n_kp2: int) -> float:
 
 
 def run_localization(img_query):
-    sift = cv2.SIFT_create()
-    kp_query, des_query = sift.detectAndCompute(img_query, None)
+    resp = requests.post(
+        f"{BASE_URL}/api/update_location", json={"data": img_query.tolist()}
+    )
 
-    max_similarity_score = -1
-    most_similar_img = None
+    # max_similarity_score = -1
+    # most_similar_img = None
 
-    for i in range(100, 108):
-        img_target_query = f"static\\store_phone\\IMG_9{i}.jpg"
-        if DEBUG:
-            print(img_target_query)
-        target_img = cv2.cvtColor(cv2.imread(img_target_query), cv2.COLOR_BGR2RGB)
-        kp_target, des_target = sift.detectAndCompute(target_img, None)
+    # for i in range(100, 108):
+    #     img_target_query = f"static\\store_phone\\IMG_9{i}.jpg"
+    #     if DEBUG:
+    #         print(img_target_query)
+    #     target_img = cv2.cvtColor(cv2.imread(img_target_query), cv2.COLOR_BGR2RGB)
+    #     kp_target, des_target = sift.detectAndCompute(target_img, None)
 
-        FLANN_INDEX_KDTREE = 1
-        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-        search_params = dict(checks=50)
+    #     FLANN_INDEX_KDTREE = 1
+    #     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    #     search_params = dict(checks=50)
 
-        flann = cv2.FlannBasedMatcher(index_params, search_params)
-        matches = flann.knnMatch(des_query, des_target, k=2)
+    #     flann = cv2.FlannBasedMatcher(index_params, search_params)
+    #     matches = flann.knnMatch(des_query, des_target, k=2)
 
-        # store all the good matches as per Lowe's ratio test.
-        good = []
-        for m, n in matches:
-            if m.distance < 0.7 * n.distance:
-                good.append(m)
+    #     # store all the good matches as per Lowe's ratio test.
+    #     good = []
+    #     for m, n in matches:
+    #         if m.distance < 0.7 * n.distance:
+    #             good.append(m)
 
-        print(
-            match_count_score(
-                matches=len(good), n_kp1=len(kp_query), n_kp2=len(kp_target)
-            )
-        )
+    #     print(
+    #         match_count_score(
+    #             matches=len(good), n_kp1=len(kp_query), n_kp2=len(kp_target)
+    #         )
+    #     )
 
 
 def is_object_in_image(image_path: str, object_name: str):
@@ -91,16 +92,19 @@ def is_object_in_image(image_path: str, object_name: str):
     return response.json()["choices"][0]["message"]["content"]
 
 
+vidcap = cv2.VideoCapture(0)
 while True:
     # perform localization
-    resp = requests.post(
-        f"{BASE_URL}/api/update_location", json={"latitude": 0, "longitude": 0}
-    )
-    time.sleep(1)
+    # resp = requests.post(
+    #     f"{BASE_URL}/api/update_location", json={"latitude": 0, "longitude": 0}
+    # )
+    # time.sleep(1)
     localization_filepath = "static\\localization\\sample_1.jpg"
-    img_query = cv2.cvtColor(cv2.imread(localization_filepath), cv2.COLOR_BGR2RGB)
-    img_query = cv2.resize(img_query, (256, 256))
-    run_localization(img_query=img_query)
+    # img_query = cv2.cvtColor(cv2.imread(localization_filepath), cv2.COLOR_BGR2RGB)
+    ret, frame = vidcap.read()
+    img_query = cv2.resize(frame, (256, 256))
+    for i in range(10):
+        run_localization(img_query=img_query)
 
     # cv2.imshow("frame", img)
     # cv2.waitKey()
@@ -113,9 +117,8 @@ while True:
     input("press enter to tap:")
 
     # detect object of interest
-    detection_filepath = "static\\detection\\cocacola.jpg"
-    img = cv2.imread(detection_filepath)
-    img = cv2.resize(img, (256, 256))
+    ret, frame = vidcap.read()
+    img = cv2.resize(frame, (256, 256))
     cv2.imwrite("tmp.jpg", img)
 
     resp = is_object_in_image(image_path="tmp.jpg", object_name=grocery_list[0])

@@ -8,6 +8,7 @@
       href="https://cdn.jsdelivr.net/npm/@mappedin/mappedin-js@beta/lib/mappedin.css"
       rel="stylesheet"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js" integrity="sha512-DdX/YwF5e41Ok+AI81HI8f5/5UsoxCVT9GKYZRIzpLxb8Twz4ZwPPX+jQMwMhNQ9b5+zDEefc+dcvQoPWGNZ3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
       * {
         margin: 0;
@@ -39,6 +40,7 @@
         getMapData,
         show3dMap
       } from "https://cdn.jsdelivr.net/npm/@mappedin/mappedin-js@beta/lib/esm/index.js";
+    //   import {axios} from "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js";
 
       // See Demo API key Terms and Conditions
       const options = {
@@ -48,8 +50,17 @@
       }
 
       getMapData(options).then(async (mapData) => {
+        let resp = await axios.get("https://d6af-129-97-124-163.ngrok-free.app/api/view/dashboard",
+        {
+            headers: {
+                "ngrok-skip-browser-warning": "69420"
+            }
+        }
+        );
+        console.log(resp);
+        // console.log("hi");
         const mapView = await show3dMap(document.getElementById("mappedin-map"), mapData);
-        const coord = mapView.createCoordinate(43.471743837194154, -80.53876909166863);
+        const coord = mapView.createCoordinate(resp.data.latitude, resp.data.longitude);
 		mapView.Labels.add(coord, 'Marker');
         mapView.on("click", (event) => {
         // console.log(event.coordinate);
@@ -57,12 +68,12 @@
         console.log(event.coordinate);
         });
 
-        for (const poi of mapData.getByType('point-of-interest')) {
-	// Label the point of interest if it's on the map floor currently shown.
-	if (poi.floor.id === mapView.currentFloor.id) {
-		mapView.Labels.add(poi.coordinate, poi.name);
-	}
-}
+//         for (const poi of mapData.getByType('point-of-interest')) {
+// 	// Label the point of interest if it's on the map floor currently shown.
+// 	if (poi.floor.id === mapView.currentFloor.id) {
+// 		mapView.Labels.add(poi.coordinate, poi.name);
+// 	}
+// }
       });
       
 
