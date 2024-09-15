@@ -93,6 +93,9 @@ def is_object_in_image(image_path: str, object_name: str):
 
 while True:
     # perform localization
+    resp = requests.post(
+        f"{BASE_URL}/api/update_location", json={"latitude": 0, "longitude": 0}
+    )
     time.sleep(1)
     localization_filepath = "static\\localization\\sample_1.jpg"
     img_query = cv2.cvtColor(cv2.imread(localization_filepath), cv2.COLOR_BGR2RGB)
