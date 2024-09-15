@@ -18,11 +18,16 @@
       body {
         width: 100%;
         height: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: medium;
       }
       #mappedin-map {
-        height: 100%;
+        height: 20%;
         width: 100%;
         position: relative;
+      }
+      .comp{
+        padding: 20px;
       }
     </style>
     <title>Mappedin Web SDK v6 Getting Started with JSDelivr</title>
@@ -32,7 +37,23 @@
   </head>
   <body>
     <div id="mappedin-map"></div>
-
+    <div class="comp">
+        <br/>
+        <b>Instruction:</b>
+    <div id="instruction"></div>
+    </div>
+    <div class="comp">
+        <br/>
+        <b>Grocery List:</b>
+    <div id="grocery_list"></div>
+    </div>
+    <div class="comp">
+        <br/>
+        <b>Live Feed:</b>
+    <div id="live_img">
+        <img src="https://d6af-129-97-124-163.ngrok-free.app/static/img/curr_frame.png">
+    </div>
+    </div>
     <!-- <iframe href="https://www.mappedin.com/" title="Mappedin Map" name="Mappedin Map" allow="clipboard-write; web-share" scrolling="no" width="100%" height="650" frameborder="0" style="border:0" src="https://app.mappedin.com/map/66e5e84f014c90000bd7cf12?embedded=true"></iframe> -->
 
     <script type="module">
@@ -49,23 +70,37 @@
         mapId: "66e5e84f014c90000bd7cf12"
       }
 
-      getMapData(options).then(async (mapData) => {
-        let resp = await axios.get("https://d6af-129-97-124-163.ngrok-free.app/api/view/dashboard",
-        {
-            headers: {
-                "ngrok-skip-browser-warning": "69420"
-            }
+      function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
-        );
-        console.log(resp);
-        // console.log("hi");
+
+
+      getMapData(options).then(async (mapData) => {
         const mapView = await show3dMap(document.getElementById("mappedin-map"), mapData);
-        const coord = mapView.createCoordinate(resp.data.latitude, resp.data.longitude);
-		mapView.Labels.add(coord, 'Marker');
-        mapView.on("click", (event) => {
-        // console.log(event.coordinate);
-        mapView.Labels.add(event.coordinate, 'Marker');
-        console.log(event.coordinate);
+
+        for (let i=0; i<99999; i++) {
+
+            let resp = await axios.get("https://d6af-129-97-124-163.ngrok-free.app/api/view/dashboard",
+            {
+                headers: {
+                    "ngrok-skip-browser-warning": "69420"
+                }
+            }
+            );
+            console.log(resp);
+            // console.log("hi");
+            const coord = mapView.createCoordinate(resp.data.latitude, resp.data.longitude);
+            document.getElementById("instruction").innerText = resp.data.instruction;
+            document.getElementById("grocery_list").innerText = resp.data.live_grocery_list
+
+            mapView.Labels.add(coord, 'Marker');
+            // mapView.on("click", (event) => {
+            // console.log(event.coordinate);
+            // mapView.Labels.add(event.coordinate, 'Marker');
+            // console.log(event.coordinate);
+            // setTimeout(function(){},5000);
+            await sleep(5000);
+        }
         });
 
 //         for (const poi of mapData.getByType('point-of-interest')) {
@@ -74,7 +109,7 @@
 // 		mapView.Labels.add(poi.coordinate, poi.name);
 // 	}
 // }
-      });
+    //   });
       
 
 

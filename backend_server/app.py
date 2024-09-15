@@ -39,10 +39,10 @@ def create_prompt(user_resp) -> str:
     return f'Rewrite the following as a list of food, all lowercase, no spaces separting but commas separating and only keep food nouns: "{user_resp}"'
 
 
-def return_user_instruction() -> str:
+def return_user_instruction(str_food_literal) -> str:
     co = cohere.Client(os.getenv("COHERE_API_KEY"))
     text_list = co.chat(
-        message="Generate generic grocery store navigation in less than 10 words. Do not generate any newlines."
+        message=f"Generate instructions to get to {str_food_literal}, knowing that vegetables are on the right, and juice and egggs are on the left."
     )
     return text_list.text
 
@@ -57,7 +57,7 @@ def get_current_state() -> dict:
         "live_grocery_list": GROCERY_LIST,
         "latitude": LATITUDE,
         "longitude": LONGITUDE,
-        "instruction": return_user_instruction(),
+        "instruction": return_user_instruction(str(GROCERY_LIST)),
         "img_uri": "https://d6af-129-97-124-163.ngrok-free.app/static/img/generic.jpg",
     }
     return state_dict
@@ -85,7 +85,9 @@ def api_update_location():
     kp_query, des_query = sift.detectAndCompute(
         np.asarray(json_resp["data"], dtype=np.uint8), None
     )
-    cv2.imwrite("curr_frame.png", np.asarray(json_resp["data"], dtype=np.uint8))
+    cv2.imwrite(
+        "static\\img\\curr_frame.png", np.asarray(json_resp["data"], dtype=np.uint8)
+    )
 
     max_similarity_score = -1
     most_similar_corner = -1
@@ -123,6 +125,30 @@ def api_update_location():
 
     print(get_current_state())
 
+    r = requests.post(
+        "https://buckethatrobot.onrender.com/update-message",
+        headers={"Content-Type": "application/json"},
+        json={"message": "New update received.!"},
+    )
+
+    r = requests.post(
+        "https://buckethatrobot.onrender.com/update-instructions",
+        headers={"Content-Type": "application/json"},
+        json={"instructions": get_current_state()["instruction"]},
+    )
+
+    r = requests.post(
+        "https://buckethatrobot.onrender.com/update-image-uri",
+        headers={"Content-Type": "application/json"},
+        json={"img_uri": "https://d6af-129-97-124-163.ngrok-free.app/curr_frame.png"},
+    )
+
+    r = requests.post(
+        "https://buckethatrobot.onrender.com/update-grocery-list",
+        headers={"Content-Type": "application/json"},
+        json={"message": ",".join(GROCERY_LIST)},
+    )
+
     return jsonify({"data": True})
 
 
@@ -157,7 +183,7 @@ def sms_reply():
 
     co = cohere.Client(os.getenv("COHERE_API_KEY"))
     text_list = co.chat(message=create_prompt(body))
-    resp.message(text_list.text)
+    resp.message(f"Sounds good! Here is your grocery list: {text_list.text}.")
 
     GROCERY_LIST = list(text_list.text.split(","))
     ORIGINAL_GROCERY_LIST = GROCERY_LIST.copy()
