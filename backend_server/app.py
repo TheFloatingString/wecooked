@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
 import cv2
+from dotenv import load_dotenv
+
+load_dotenv()
+import os
 
 app = Flask(__name__)
 
@@ -41,7 +45,7 @@ def sms_reply():
     # Add a message
     body = request.values.get("Body").lower()
 
-    co = cohere.Client("zNXWvOqKzqDiV27WcbEEhkyW17506q78OI5FKI3P")
+    co = cohere.Client(os.getenv("COHERE_API_KEY"))
     text_list = co.chat(message=create_prompt(body))
     resp.message(text_list.text)
 
