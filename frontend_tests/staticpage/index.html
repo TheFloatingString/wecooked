@@ -25,11 +25,14 @@
       }
     </style>
     <title>Mappedin Web SDK v6 Getting Started with JSDelivr</title>
+    <link href="https://cdn.jsdelivr.net/npm/@mappedin/mappedin-js@beta/lib/index.css"
+    rel="stylesheet"
+  />
   </head>
   <body>
-    <!-- <div id="mappedin-map"></div> -->
+    <div id="mappedin-map"></div>
 
-    <iframe href="https://www.mappedin.com/" title="Mappedin Map" name="Mappedin Map" allow="clipboard-write; web-share" scrolling="no" width="100%" height="650" frameborder="0" style="border:0" src="https://app.mappedin.com/map/66e5e84f014c90000bd7cf12?embedded=true"></iframe>
+    <!-- <iframe href="https://www.mappedin.com/" title="Mappedin Map" name="Mappedin Map" allow="clipboard-write; web-share" scrolling="no" width="100%" height="650" frameborder="0" style="border:0" src="https://app.mappedin.com/map/66e5e84f014c90000bd7cf12?embedded=true"></iframe> -->
 
     <script type="module">
       import {
@@ -39,14 +42,31 @@
 
       // See Demo API key Terms and Conditions
       const options = {
-        key: "mik_yeBk0Vf0nNJtpesfu560e07e5",
-        secret: "mis_2g9ST8ZcSFb5R9fPnsvYhrX3RyRwPtDGbMGweCYKEq385431022",
-        mapId: "65c0ff7430b94e3fabd5bb8c"
+        key: "mik_ltzYyQadhAwulqA8x5d870846",
+        secret: "mis_0AloZ7gHZXFWneVm5tzM70xLd6bkfpVnohi2kblVJUu8ec510cb",
+        mapId: "66e5e84f014c90000bd7cf12"
       }
 
       getMapData(options).then(async (mapData) => {
         const mapView = await show3dMap(document.getElementById("mappedin-map"), mapData);
+        const coord = mapView.createCoordinate(43.471743837194154, -80.53876909166863);
+		mapView.Labels.add(coord, 'Marker');
+        mapView.on("click", (event) => {
+        // console.log(event.coordinate);
+        mapView.Labels.add(event.coordinate, 'Marker');
+        console.log(event.coordinate);
+        });
+
+        for (const poi of mapData.getByType('point-of-interest')) {
+	// Label the point of interest if it's on the map floor currently shown.
+	if (poi.floor.id === mapView.currentFloor.id) {
+		mapView.Labels.add(poi.coordinate, poi.name);
+	}
+}
       });
+      
+
+
     </script>
   </body>
 </html>

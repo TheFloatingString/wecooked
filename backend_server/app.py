@@ -1,10 +1,19 @@
 from flask import Flask, request, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
+import cv2
 
 app = Flask(__name__)
 
 
-GROCERY_LIST = ["bananas", "oranges", "cocacola"]
+GROCERY_LIST = []
+sift = cv2.SIFT_create()
+
+
+def create_prompt(user_resp):
+    return f'Rewrite the following as a list of food, all lowercase, no spaces separting but commas separating and only keep food nouns: "{user_resp}"'
+
+
+import cohere
 
 
 @app.route("/")
@@ -24,13 +33,20 @@ def api_view_client_completed_item():
 
 @app.route("/sms", methods=["GET", "POST"])
 def sms_reply():
+    global GROCERY_LIST
     """Respond to incoming calls with a simple text message."""
     # Start our TwiML response
     resp = MessagingResponse()
 
     # Add a message
     body = request.values.get("Body").lower()
-    resp.message(body)
+
+    co = cohere.Client("zNXWvOqKzqDiV27WcbEEhkyW17506q78OI5FKI3P")
+    text_list = co.chat(message=create_prompt(body))
+    resp.message(text_list.text)
+
+    GROCERY_LIST = list(text_list.text.split(","))
+    print(GROCERY_LIST)
 
     return str(resp)
 
