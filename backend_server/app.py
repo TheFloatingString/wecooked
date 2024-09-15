@@ -27,11 +27,14 @@ def hello_world():
 
 @app.route("/api/view/client", methods=["GET", "POST"])
 def api_current():
-    return jsonify({"data": "we cooked."})
+    global GROCERY_LIST
+    return jsonify({"data": GROCERY_LIST})
 
 
 @app.route("/api/view/client/completed_item", methods=["GET", "POST"])
 def api_view_client_completed_item():
+    global GROCERY_LIST
+    GROCERY_LIST.pop()
     return jsonify({"data": "substract one"})
 
 
