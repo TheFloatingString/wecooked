@@ -1,3 +1,5 @@
 # Aisle Atlas
 
-An AI-powered headband that allows hands-free shopping, by texting an SMS message to it.
+An AI-powered headband that allows hands-free shopping, by sending it an SMS message.
+
+Made with tools from Cohere, MappedIn, OpenCV and vision models from OpenAI. 
